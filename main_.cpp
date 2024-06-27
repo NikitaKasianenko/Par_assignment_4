@@ -119,7 +119,6 @@ public:
             for (int i = 0; i < initialrowcount && array[i] != nullptr; i++) {
                 free(array[i]);
             }
-            free(array);
             array = nullptr;
         }
     }
@@ -187,11 +186,15 @@ public:
     }
 
     char* encrypt_text(char* text, int key) {
-        return encrypt(text, key);
+        char* result = encrypt(text, key);
+        result[strlen(result)] = '\0';
+        return result;
     }
 
     char* decrypt_text(char* text, int key) {
-        return decrypt(text, key);
+        char* result = decrypt(text, key);
+        result[strlen(result)] = '\0';
+        return result;
     }
 
 private:
@@ -220,38 +223,47 @@ public:
     }
 
     static char** read_from_file(const char* path, size_t buffersize, int* nrow) {
-        std::ifstream file(path);
+        std::ifstream file(path, std::ios::binary);
         if (!file) {
             printf("can't open file\n");
             return nullptr;
         }
 
-        char** buffer = (char**)malloc(buffersize * sizeof(char*));
+        file.seekg(0, std::ios::end);
+        std::streampos fsize = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        int loops = fsize / buffersize;
+        int lastChunk = fsize % buffersize;
+
+        char** buffer = (char**)malloc((loops + 1) * sizeof(char*));
         if (buffer == nullptr) {
             printf("memory allocation failed.");
             return nullptr;
         }
 
-        std::string line;
-        *nrow = 0;
-        while (getline(file, line)) {
-            buffer[*nrow] = (char*)malloc((line.size() + 1) * sizeof(char));
-            if (buffer[*nrow] == nullptr) {
+        for (int i = 0; i < loops; i++) {
+            buffer[i] = (char*)malloc(buffersize * sizeof(char));
+            if (buffer[i] == nullptr) {
                 printf("memory allocation failed.");
                 return nullptr;
             }
-            strcpy(buffer[*nrow], line.c_str());
-            (*nrow)++;
-            if (*nrow >= buffersize) {
-                buffersize *= 2;
-                buffer = (char**)realloc(buffer, buffersize * sizeof(char*));
-                if (buffer == nullptr) {
-                    printf("memory allocation failed.");
-                    return nullptr;
-                }
-            }
+            file.read(buffer[i], buffersize);
+            buffer[i][buffersize - 1] = '\0';
         }
 
+        if (lastChunk > 0) {
+            buffer[loops] = (char*)malloc((lastChunk  * sizeof(char))+1);
+            if (buffer[loops] == nullptr) {
+                printf("memory allocation failed.");
+                return nullptr;
+            }
+            file.read(buffer[loops], lastChunk);
+            buffer[loops][lastChunk] = '\0';
+
+        }
+
+        *nrow = loops + (lastChunk > 0 ? 1 : 0);
         buffer[*nrow] = nullptr;
 
         return buffer;
@@ -275,17 +287,17 @@ int main() {
         command = CLI::user_input(&bufferSize);
 
         switch (atoi(command)) {
-        case 4: // Exit
+        case 4:
             free(command);
             return 0;
 
-        case 3: // Print state
+        case 3:
             editor.print(array);
             free(command);
             continue;
 
-        case 1: // Encrypt
-        case 2: // Decrypt
+        case 1:
+        case 2:
             printf("Enter file name to open: \n");
             path_in = CLI::user_file(&bufferSize);
 
@@ -305,7 +317,6 @@ int main() {
             array.setArray(buffer);
             array.setNrow(nrow);
 
-            
             for (int i = 0; i < nrow; i++) {
                 if (atoi(command) == 1) {
                     array.getArray()[i] = cipher.encrypt_text(array.getArray()[i], key);
@@ -321,7 +332,6 @@ int main() {
 
         default:
             printf("Invalid command.\n");
-            break;
         }
 
         free(command);
