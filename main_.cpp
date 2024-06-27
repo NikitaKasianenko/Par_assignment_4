@@ -47,7 +47,7 @@ public:
             exit(1);
         }
         sprintf(path, "c:\\windows\\temp\\%s.txt", input);
-        free(input);
+        free(input);  
         return path;
     }
 };
@@ -152,5 +152,53 @@ protected:
     int nrow;
     int ncol;
     char** array;
+};
+
+class TextEditor {
+public:
+    void print(Text& redactor) {
+        for (int i = 0; i < redactor.getNrow(); i++) {
+            printf("%s\n", redactor.getArray()[i]);
+        }
+    }
+};
+
+class CaesarCipher {
+public:
+    CaesarCipher() {
+        handle = LoadLibrary(TEXT("c:\\users\\nekit\\source\\repos\\assignment_3\\assignment_3\\caesar.dll"));
+        if (handle == nullptr) {
+            cout << "library not found or failed to load" << endl;
+            exit(1);
+        }
+
+        encrypt = (encrypt_ptr)GetProcAddress(handle, "encrypt");
+        decrypt = (decrypt_ptr)GetProcAddress(handle, "decrypt");
+
+        if (encrypt == nullptr || decrypt == nullptr) {
+            cout << "function 'encrypt' or 'decrypt' not found in the library" << endl;
+            FreeLibrary(handle);
+            exit(1);
+        }
+    }
+
+    ~CaesarCipher() {
+        FreeLibrary(handle);
+    }
+
+    char* encrypt_text(char* text, int key) {
+        return encrypt(text, key);
+    }
+
+    char* decrypt_text(char* text, int key) {
+        return decrypt(text, key);
+    }
+
+private:
+    HINSTANCE handle;
+    typedef char* (*encrypt_ptr)(char*, int);
+    typedef char* (*decrypt_ptr)(char*, int);
+    encrypt_ptr encrypt;
+    decrypt_ptr decrypt;
 };
 
