@@ -202,3 +202,122 @@ private:
     decrypt_ptr decrypt;
 };
 
+class FileHandler {
+public:
+    static void write_in_file(const char* path, Text& array, int nrow) {
+        FILE* file = fopen(path, "w");
+
+        if (file == nullptr) {
+            printf("can't open file\n");
+            return;
+        }
+
+        for (int i = 0; i < nrow; i++) {
+            fprintf(file, "%s\n", array.getArray()[i]);
+        }
+        printf("successful\n");
+        fclose(file);
+    }
+
+    static char** read_from_file(const char* path, size_t buffersize, int* nrow) {
+        std::ifstream file(path);
+        if (!file) {
+            printf("can't open file\n");
+            return nullptr;
+        }
+
+        char** buffer = (char**)malloc(buffersize * sizeof(char*));
+        if (buffer == nullptr) {
+            printf("memory allocation failed.");
+            return nullptr;
+        }
+
+        std::string line;
+        *nrow = 0;
+        while (getline(file, line)) {
+            buffer[*nrow] = (char*)malloc((line.size() + 1) * sizeof(char));
+            if (buffer[*nrow] == nullptr) {
+                printf("memory allocation failed.");
+                return nullptr;
+            }
+            strcpy(buffer[*nrow], line.c_str());
+            (*nrow)++;
+            if (*nrow >= buffersize) {
+                buffersize *= 2;
+                buffer = (char**)realloc(buffer, buffersize * sizeof(char*));
+                if (buffer == nullptr) {
+                    printf("memory allocation failed.");
+                    return nullptr;
+                }
+            }
+        }
+
+        buffer[*nrow] = nullptr;
+
+        return buffer;
+    }
+};
+
+int main() {
+    size_t bufferSize = 256;
+    Text array;
+    TextEditor editor;
+    char* command = nullptr;
+    char* path_in = nullptr;
+    char* path_out = nullptr;
+
+    while (true) {
+        printf("Encrypt - 1, Decrypt - 2, Print state - 3, Exit - 4 \nCommand: ");
+        command = CLI::user_input(&bufferSize);
+
+        if (strcmp(command, "4") == 0) {
+            break;
+        }
+
+        else if (strcmp(command, "3") == 0) {
+            editor.print(array);
+            continue;
+        }
+
+        printf("Enter file name to open: \n");
+        path_in = CLI::user_file(&bufferSize);
+
+        if (strcmp(command, "1") == 0 || strcmp(command, "2") == 0) {
+
+            printf("Enter key: \n");
+            int key = atoi(CLI::user_input(&bufferSize));
+            printf("Enter file name to save: \n");
+            path_out = CLI::user_file(&bufferSize);
+
+            int nrow;
+            char** buffer = FileHandler::read_from_file(path_in, bufferSize, &nrow);
+            if (buffer == nullptr) {
+                printf("Error reading from file.\n");
+                free(path_in);
+                free(path_out);
+                continue;
+            }
+            array.setArray(buffer);
+            array.setNrow(nrow);
+
+            CaesarCipher cipher;
+            for (int i = 0; i < nrow; i++) {
+                if (strcmp(command, "1") == 0) {
+                    array.getArray()[i] = cipher.encrypt_text(array.getArray()[i], key);
+                }
+                else if (strcmp(command, "2") == 0) {
+                    array.getArray()[i] = cipher.decrypt_text(array.getArray()[i], key);
+                }
+            }
+
+            FileHandler::write_in_file(path_out, array, nrow);
+            free(path_out);
+        }
+
+
+        free(command);
+        free(path_in);
+    }
+
+    return 0;
+}
