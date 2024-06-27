@@ -275,17 +275,17 @@ int main() {
         command = CLI::user_input(&bufferSize);
 
         switch (atoi(command)) {
-        case 4: 
+        case 4: // Exit
             free(command);
             return 0;
 
-        case 3: 
+        case 3: // Print state
             editor.print(array);
             free(command);
             continue;
 
-        case 1: 
-        case 2: 
+        case 1: // Encrypt
+        case 2: // Decrypt
             printf("Enter file name to open: \n");
             path_in = CLI::user_file(&bufferSize);
 
