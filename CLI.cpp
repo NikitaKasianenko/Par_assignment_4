@@ -3,6 +3,9 @@
 #include "CLI.h"
 #include <cstdlib>
 #include <cstdio>
+#include <string.h>
+#include <string>
+#include "Text.h"
 
 char* CLI::user_input(size_t* buffersize) {
     char* input = (char*)malloc(*buffersize * sizeof(char));
@@ -44,3 +47,26 @@ char* CLI::user_file(size_t* buffersize) {
     return path;
 
 }
+
+void CLI::sscan_user_input(Text array, int* row, int* col, size_t* bufferSize) {
+    char* input = nullptr;
+    int currow, curcol;
+
+    while (true) {
+        printf("Choose line and index: ");
+        input = user_input(bufferSize);
+
+        if (strlen(input) > 0 && sscanf(input, "%d %d", &currow, &curcol) == 2) {
+            if (currow >= 0 && currow <= array.getNrow() && curcol >= 0 && curcol <= (int)strlen(array.getArray()[currow])) {
+                *row = currow;
+                *col = curcol;
+                free(input);
+                return; 
+            }
+        }
+
+        free(input);
+        printf("Choose correct index separated by space in format 'x y'\n");
+    }
+}
+

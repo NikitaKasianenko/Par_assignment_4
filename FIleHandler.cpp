@@ -3,6 +3,7 @@
 #include "FileHandler.h"
 #include <stdio.h>
 #include <fstream>
+#include "CaesarCipher.h"
 
 void FileHandler::write_in_file(const char* path, Text& array, int nrow) {
     FILE* file = fopen(path, "w");
@@ -19,13 +20,15 @@ void FileHandler::write_in_file(const char* path, Text& array, int nrow) {
     fclose(file);
 }
 
-char** FileHandler::read_from_file(const char* path, size_t buffersize, int* nrow) {
+void FileHandler::read_from_file(Text& array, const char* path, size_t buffersize, int* nrow,int parametr,int key) {
     std::ifstream file(path, std::ios::binary);
+
     if (!file) {
         printf("can't open file\n");
-        return nullptr;
+        return;
     }
 
+    CaesarCipher chipher;
     file.seekg(0, std::ios::end);
     std::streampos fsize = file.tellg();
     file.seekg(0, std::ios::beg);
@@ -33,36 +36,42 @@ char** FileHandler::read_from_file(const char* path, size_t buffersize, int* nro
     int loops = fsize / buffersize;
     int lastChunk = fsize % buffersize;
 
-    char** buffer = (char**)malloc((loops + 1) * sizeof(char*));
-    if (buffer == nullptr) {
-        printf("memory allocation failed.");
-        return nullptr;
+    *nrow = loops + (lastChunk > 0 ? 1 : 0);
+    array.setNrow(*nrow);
+
+    if (array.getArray() == nullptr || array.getNrow() < *nrow) {
+        array.reallocate_rows();
     }
 
     for (int i = 0; i < loops; i++) {
-        buffer[i] = (char*)malloc(buffersize * sizeof(char));
-        if (buffer[i] == nullptr) {
-            printf("memory allocation failed.");
-            return nullptr;
+
+        file.read(array.getArray()[i], buffersize);
+        array.getArray()[i][buffersize] = '\0';
+        
+
+        if (parametr == 1) {
+            array.getArray()[i] = chipher.encrypt_text(array.getArray()[i], key);
         }
-        file.read(buffer[i], buffersize);
-        buffer[i][buffersize - 1] = '\0';
+
+        else if (parametr == 2) {
+            array.getArray()[i] = chipher.decrypt_text(array.getArray()[i], key);
+        }
     }
 
     if (lastChunk > 0) {
-        buffer[loops] = (char*)malloc((lastChunk * sizeof(char)) + 1);
-        if (buffer[loops] == nullptr) {
-            printf("memory allocation failed.");
-            return nullptr;
+
+        file.read(array.getArray()[loops], lastChunk);
+        array.getArray()[loops][lastChunk] = '\0';
+        
+
+        if (parametr == 1) {
+            array.getArray()[loops] = chipher.encrypt_text(array.getArray()[loops], key);
         }
-        file.read(buffer[loops], lastChunk);
-        buffer[loops][lastChunk] = '\0';
+
+        else if (parametr == 2) {
+            array.getArray()[loops] = chipher.decrypt_text(array.getArray()[loops], key);
+        }
 
     }
-
-    *nrow = loops + (lastChunk > 0 ? 1 : 0);
-    buffer[*nrow] = nullptr;
-
-    return buffer;
 
 }
