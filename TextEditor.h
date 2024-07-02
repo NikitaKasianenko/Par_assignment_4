@@ -32,6 +32,8 @@ private:
     stack<char*> redostack;
     stack<char*> bufferstack;
     stack<char*> bufferundostack;
+    
+
 };
 
 #endif 

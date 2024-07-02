@@ -20,7 +20,7 @@ void FileHandler::write_in_file(const char* path, Text& array, int nrow) {
     fclose(file);
 }
 
-void FileHandler::read_from_file(Text& array, const char* path, size_t buffersize, int* nrow,int parametr,int key) {
+void FileHandler::read_from_file(Text& array, const char* path, size_t buffersize, int* nrow, int parametr, int key) {
     std::ifstream file(path, std::ios::binary);
 
     if (!file) {
@@ -28,7 +28,7 @@ void FileHandler::read_from_file(Text& array, const char* path, size_t buffersiz
         return;
     }
 
-    CaesarCipher chipher;
+    CaesarCipher cipher;
     file.seekg(0, std::ios::end);
     std::streampos fsize = file.tellg();
     file.seekg(0, std::ios::beg);
@@ -36,42 +36,38 @@ void FileHandler::read_from_file(Text& array, const char* path, size_t buffersiz
     int loops = fsize / buffersize;
     int lastChunk = fsize % buffersize;
 
-    *nrow = loops + (lastChunk > 0 ? 1 : 0);
-    array.setNrow(*nrow);
+    int totalRowsNeeded = loops + (lastChunk > 0 ? 1 : 0);
+    *nrow = totalRowsNeeded;
 
-    if (array.getArray() == nullptr || array.getNrow() < *nrow) {
+    array.setNrow(totalRowsNeeded);
+
+    while (array.getNrow() > array.getInitRows()) {
         array.reallocate_rows();
     }
 
     for (int i = 0; i < loops; i++) {
-
         file.read(array.getArray()[i], buffersize);
         array.getArray()[i][buffersize] = '\0';
-        
 
         if (parametr == 1) {
-            array.getArray()[i] = chipher.encrypt_text(array.getArray()[i], key);
+            array.getArray()[i] = cipher.encrypt_text(array.getArray()[i], key);
         }
-
         else if (parametr == 2) {
-            array.getArray()[i] = chipher.decrypt_text(array.getArray()[i], key);
+            array.getArray()[i] = cipher.decrypt_text(array.getArray()[i], key);
         }
     }
 
     if (lastChunk > 0) {
-
         file.read(array.getArray()[loops], lastChunk);
         array.getArray()[loops][lastChunk] = '\0';
-        
 
         if (parametr == 1) {
-            array.getArray()[loops] = chipher.encrypt_text(array.getArray()[loops], key);
+            array.getArray()[loops] = cipher.encrypt_text(array.getArray()[loops], key);
         }
-
         else if (parametr == 2) {
-            array.getArray()[loops] = chipher.decrypt_text(array.getArray()[loops], key);
+            array.getArray()[loops] = cipher.decrypt_text(array.getArray()[loops], key);
         }
-
     }
 
+    file.close();
 }

@@ -88,9 +88,9 @@ void TextEditor::new_line(Text& redactor) {
 
 void TextEditor::insert_text(Text& redactor, size_t* buffersize, int currow, int curcol) {
     char* input = nullptr;
-
+    CLI CLI;
     printf("enter text to insert: ");
-    input = CLI::user_input(buffersize);
+    input = CLI.user_input(buffersize);
 
     int text_length = strlen(input);
     if (text_length + strlen(redactor.getArray()[currow]) >= *buffersize) {
@@ -150,7 +150,8 @@ void TextEditor::delete_text(Text& redactor, int currow, int curcol, int amount)
 
 void TextEditor::search(Text& redactor, size_t* buffersize) {
     printf("enter text to search: ");
-    char* input = CLI::user_input(buffersize);
+    CLI CLI;
+    char* input = CLI.user_input(buffersize);
     char* to_search = input;
     bool found = false;
     char* name = nullptr;
@@ -186,11 +187,11 @@ void TextEditor::cut(Text& redactor, int currow, int curcol, int amount) {
 
 void TextEditor::insert_rp(Text& redactor, size_t* buffersize, int currow, int curcol) {
     char* input = nullptr;
-
     char* original_text = _strdup(redactor.getArray()[currow]);
 
     printf("enter text: ");
-    input = CLI::user_input(buffersize);
+    CLI CLI;
+    input = CLI.user_input(buffersize);
 
     int text_length = strlen(input);
 
@@ -616,7 +617,7 @@ void TextEditor::help() {
     printf("command-'16': insert with replacement\n");
     printf("command-'17': encrypt array\n");
     printf("command-'18': decrypt array\n");
-    printf("command-'19': encrypt file\n");
-    printf("command-'20': decrypt file\n\n");
+    printf("command-'19': encrypt from file\n");
+    printf("command-'20': decrypt from file\n\n");
 
 }

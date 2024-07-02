@@ -64,7 +64,7 @@ void Text::initialize_array() {
 
 void Text::freeArray() {
     if (array) {
-        for (int i = 0; i < initialrowcount && array[i] != nullptr; i++) {
+        for (int i = 0; i < initialrowcount && array[i] != nullptr && array[i] != NULL; i++) {
             free(array[i]);
         }
         array = nullptr;
@@ -72,23 +72,31 @@ void Text::freeArray() {
 }
 
 void Text::reallocate_rows() {
-    initialrowcount *= 2;
-    char** temp = (char**)realloc(array, initialrowcount * sizeof(char*));
+    int newInitRows = initialrowcount * 2; 
+    char** temp = (char**)realloc(array, newInitRows * sizeof(char*));
     if (temp == nullptr) {
         printf("memory allocation failed.");
         exit(1);
     }
     array = temp;
-    for (int i = nrow; i < initialrowcount; i++) {
+
+    for (int i = initialrowcount; i < newInitRows; i++) {
         array[i] = (char*)malloc(buffersize * sizeof(char));
         if (array[i] == nullptr) {
             printf("memory allocation failed.");
             exit(1);
         }
-        array[i][0] = '\0';
+        array[i][0] = '\0'; 
     }
+
+    initialrowcount = newInitRows; 
 }
+
 
 void Text::newbuffer(size_t* buffersize) {
     *buffersize *= 2;
+}
+
+int Text::getInitRows() const {
+    return initialrowcount;
 }

@@ -17,6 +17,7 @@ public:
     void freeArray();
     void reallocate_rows();
     void newbuffer(size_t* buffersize);
+    int getInitRows() const;
 
 private:
     size_t buffersize;
