@@ -37,8 +37,8 @@ void FileHandler::read_from_file(Text& array, const char* path, size_t buffersiz
     int lastChunk = fsize % buffersize;
 
     int totalRowsNeeded = loops + (lastChunk > 0 ? 1 : 0);
-    *nrow = totalRowsNeeded;
 
+    *nrow = totalRowsNeeded;
     array.setNrow(totalRowsNeeded);
 
     while (array.getNrow() > array.getInitRows()) {
@@ -47,6 +47,7 @@ void FileHandler::read_from_file(Text& array, const char* path, size_t buffersiz
 
     for (int i = 0; i < loops; i++) {
         file.read(array.getArray()[i], buffersize);
+
         array.getArray()[i][buffersize] = '\0';
 
         if (parametr == 1) {

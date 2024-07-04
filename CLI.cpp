@@ -15,7 +15,13 @@ void CLI::run() {
     size_t bufferSize = 256;
     Text array;
     TextEditor editor;
-    CaesarCipher cipher;
+    CaesarCipher* cipher = nullptr;
+
+    try {
+        cipher = new CaesarCipher();
+    }catch (const std::exception& e) {
+        printf("error: %s\n", e.what());
+    }
 
     char* input = nullptr;
     char* command = nullptr;
@@ -75,6 +81,7 @@ void CLI::run() {
         }
         else if (cmd == 11) {
             system("cls");
+            editor.help();
         }
         else if (cmd == 12) {
             sscan_user_input(array, &row, &col, &bufferSize);
@@ -94,36 +101,71 @@ void CLI::run() {
             sscan_user_input(array,&row,&col,&bufferSize);
             editor.insert_rp(array, &bufferSize, row, col);
         }
+
         else if (cmd == 17) {
-            printf("Enter key to encrypt Text: ");
-            scanf("%d", &key_chip);
-            getchar();
-            editor.encrypt_array(array, key_chip, 0);
+
+            if (cipher) {
+                printf("Enter key to encrypt Text: ");
+                scanf("%d", &key_chip);
+                getchar();
+                editor.encrypt_array(array, key_chip, 0);
+            }
+
+            else {
+                printf("Encryption functionality is not available.\n");
+            }
+
         }
+
         else if (cmd == 18) {
-            printf("Enter key to decrypt Text: ");
-            scanf("%d", &key_chip);
-            getchar();
-            editor.encrypt_array(array, key_chip, 1);
+
+            if (cipher) {
+                printf("Enter key to decrypt Text: ");
+                scanf("%d", &key_chip);
+                getchar();
+                editor.encrypt_array(array, key_chip, 1);
+            }
+
+            else {
+                printf("Decryption functionality is not available.\n");
+            }
+
         }
+
         else if (cmd == 19) {
-            printf("Enter file name to open: \n");
-            path_in = user_file(&bufferSize);
-            printf("Enter key to encrypt Text: ");
-            scanf("%d", &key_chip);
-            getchar();
-            FileHandler::read_from_file(array, path_in, bufferSize, &nrow, 1, key_chip);
-            free(path_in);
+
+            if (cipher) {
+                printf("Enter file name to open: \n");
+                path_in = user_file(&bufferSize);
+                printf("Enter key to encrypt Text: ");
+                scanf("%d", &key_chip);
+                getchar();
+                FileHandler::read_from_file(array, path_in, bufferSize, &nrow, 1, key_chip);
+                free(path_in);
+            }
+
+            else {
+                printf("Encryption functionality is not available.\n");
+            }
         }
+
         else if (cmd == 20) {
-            printf("Enter file name to open: \n");
-            path_in = user_file(&bufferSize);
-            printf("Enter key to encrypt Text: ");
-            scanf("%d", &key_chip);
-            getchar();
-            FileHandler::read_from_file(array, path_in, bufferSize, &nrow, 2, key_chip);
-            free(path_in);
+
+            if (cipher) {
+                printf("Enter file name to open: \n");
+                path_in = user_file(&bufferSize);
+                printf("Enter key to encrypt Text: ");
+                scanf("%d", &key_chip);
+                getchar();
+                FileHandler::read_from_file(array, path_in, bufferSize, &nrow, 2, key_chip);
+                free(path_in);
+            }
+
+            else {
+                printf("Encryption functionality is not available.\n");
+            }
         }
+
         else {
             printf("Invalid command.\n");
         }

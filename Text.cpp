@@ -72,6 +72,7 @@ void Text::freeArray() {
 }
 
 void Text::reallocate_rows() {
+    
     int newInitRows = initialrowcount * 2; 
     char** temp = (char**)realloc(array, newInitRows * sizeof(char*));
     if (temp == nullptr) {
